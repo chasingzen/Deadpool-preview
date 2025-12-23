@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>DeadPool 2026 – Preview</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      margin: 0;
+      background: #0b0b0b;
+      color: white;
+      font-family: system-ui;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    #ui {
+      padding: 12px;
+      background: #111;
+    }
+    button, input {
+      width: 100%;
+      margin: 6px 0;
+      padding: 10px;
+      font-size: 16px;
+      background: #222;
+      color: white;
+      border: 1px solid #333;
+    }
+    #scene {
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+
+<div id="ui">
+  <strong>DeadPool 2026 – Vercel Preview</strong><br>
+  <small>Role simulated via URL (?role=player1 / player2)</small>
+  <input id="name" placeholder="Celebrity name (typos OK)">
+  <input id="cause" placeholder="Predicted cause">
+  <button onclick="searchAndLock()">Search & Lock Pick</button>
+  <div id="status"></div>
+</div>
+
+<div id="scene"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.min.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
