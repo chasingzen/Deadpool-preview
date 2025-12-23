@@ -1,6 +1,5 @@
 /************************************************************
- * DeadPool 2026 – Mobile / Vercel Preview
- * Fully working Wikidata + Three.js build
+ * DeadPool 2026 – Mobile / Vercel Preview (FIXED)
  ************************************************************/
 
 /* ---------- ROLE (Preview Only) ---------- */
@@ -10,56 +9,36 @@ const role = params.get("role") ?? "spectator";
 const statusEl = document.getElementById("status");
 statusEl.innerText = `You are: ${role.toUpperCase()}`;
 
-/* ---------- WIKIDATA SEARCH (GET – CORS SAFE) ---------- */
+/* ---------- WIKIDATA SEARCH (REST API – RELIABLE) ---------- */
 async function searchCelebrity(query) {
   statusEl.innerText = "Searching Wikidata…";
 
-  const sparql = `
-    SELECT ?item ?itemLabel ?description WHERE {
-      SERVICE wikibase:mwapi {
-        bd:serviceParam wikibase:endpoint "www.wikidata.org";
-        bd:serviceParam wikibase:api "EntitySearch";
-        bd:serviceParam mwapi:search "${query}";
-        bd:serviceParam mwapi:language "en";
-        ?item wikibase:apiOutputItem mwapi:item.
-      }
-      OPTIONAL {
-        ?item schema:description ?description
-        FILTER (lang(?description) = "en")
-      }
-      SERVICE wikibase:label {
-        bd:serviceParam wikibase:language "en".
-      }
-    }
-    LIMIT 1
-  `;
-
   const url =
-    "https://query.wikidata.org/sparql?query=" +
-    encodeURIComponent(sparql) +
-    "&format=json";
+    "https://www.wikidata.org/w/api.php" +
+    "?action=wbsearchentities" +
+    "&search=" + encodeURIComponent(query) +
+    "&language=en" +
+    "&format=json" +
+    "&limit=1" +
+    "&origin=*";
 
   try {
-    const res = await fetch(url, {
-      headers: { "Accept": "application/sparql+json" }
-    });
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("HTTP " + res.status);
 
-    if (!res.ok) {
-      throw new Error("HTTP " + res.status);
-    }
+    const data = await res.json();
 
-    const json = await res.json();
-    const result = json.results.bindings[0];
-
-    if (!result) {
-      statusEl.innerText = "No match found.";
+    if (!data.search || data.search.length === 0) {
+      statusEl.innerText = "No celebrity found.";
       return null;
     }
 
+    const result = data.search[0];
+
     const celeb = {
-      qid: result.item.value.split("/").pop(),
-      name: result.itemLabel.value,
-      description: result.description?.value ?? ""
+      qid: result.id,
+      name: result.label,
+      description: result.description ?? ""
     };
 
     statusEl.innerText = `Matched: ${celeb.name}`;
@@ -124,8 +103,10 @@ scene.add(light);
 /* Pillar */
 const geometry = new THREE.BoxGeometry(1, 1, 1);
 const material = new THREE.MeshStandardMaterial({
-  color: role === "player1" ? 0xff0000 :
-         role === "player2" ? 0x00ff00 : 0x666666,
+  color:
+    role === "player1" ? 0xff0000 :
+    role === "player2" ? 0x00ff00 :
+    0x666666,
   emissive: 0x000000
 });
 
